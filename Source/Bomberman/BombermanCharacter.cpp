@@ -28,7 +28,7 @@ ABombermanCharacter::ABombermanCharacter()
 	CameraBoom->SetupAttachment(RootComponent);
 	CameraBoom->SetUsingAbsoluteRotation(true); // Don't want arm to rotate when character does
 	CameraBoom->TargetArmLength = 800.f;
-	CameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
+	CameraBoom->SetRelativeRotation(FRotator(-60.f, 0.f, 270.f));
 	CameraBoom->bDoCollisionTest = false; // Don't want to pull camera in when it collides with level
 
 	// Create a camera...
@@ -41,20 +41,25 @@ ABombermanCharacter::ABombermanCharacter()
 
 void ABombermanCharacter::MoveForward(float AxisValue)
 {
-	if (FMath::IsNearlyZero(AxisValue))
-	{
-		return;
-	}
-
-	const FRotator Rotation = Controller->GetControlRotation();
-	const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	AddMovementInput(Direction, AxisValue);
+	MoveCharacter(AxisValue, EAxis::X);
 }
 
 void ABombermanCharacter::MoveRight(float AxisValue)
 {
+	MoveCharacter(AxisValue, EAxis::Y);
+}
+
+void ABombermanCharacter::SpecialAction()
+{
+	if (UWorld* World = GetWorld())
+	{
+		const FTransform BombTransform = GetTransform();
+		World->SpawnActor(BombClass, &BombTransform, FActorSpawnParameters());
+	}
+}
+
+void ABombermanCharacter::MoveCharacter(float AxisValue, EAxis::Type Axis)
+{
 	if (FMath::IsNearlyZero(AxisValue))
 	{
 		return;
@@ -63,11 +68,6 @@ void ABombermanCharacter::MoveRight(float AxisValue)
 	const FRotator Rotation = Controller->GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(Axis);
 	AddMovementInput(Direction, AxisValue);
-}
-
-void ABombermanCharacter::SpecialAction()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Placing bomb!"));
 }

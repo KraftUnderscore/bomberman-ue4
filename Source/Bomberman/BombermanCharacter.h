@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Bomb.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "BombermanCharacter.generated.h"
@@ -20,12 +21,14 @@ public:
 	void SpecialAction();
 	
 private:
-	/** Top down camera */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bomberman", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<ABomb> BombClass;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* TopDownCameraComponent;
 
-	/** Camera boom positioning the camera above the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* CameraBoom;
-};
 
+	void MoveCharacter(float AxisValue, EAxis::Type Axis);
+};
