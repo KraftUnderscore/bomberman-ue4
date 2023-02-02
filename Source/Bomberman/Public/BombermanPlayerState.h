@@ -15,12 +15,6 @@ class BOMBERMAN_API ABombermanPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 
-public:
-	void PowerUp(const int32 Increase);
-
-	int32 GetBombPower() const { return BombsPower; }
-
 private:
 	int32 Score = 0;
-	int32 BombsPower = 1;
 };

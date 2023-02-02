@@ -2,8 +2,3 @@
 
 
 #include "BombermanPlayerState.h"
-
-void ABombermanPlayerState::PowerUp(const int32 Increase)
-{
-	BombsPower += Increase;
-}

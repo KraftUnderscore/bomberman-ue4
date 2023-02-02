@@ -4,9 +4,7 @@
 #include "Bomb.h"
 
 #include "Components/CapsuleComponent.h"
-
-#include "BombermanCharacter.h"
-#include "BombermanPlayerState.h"
+#include "DrawDebugHelpers.h"
 
 ABomb::ABomb()
 {
@@ -19,42 +17,17 @@ ABomb::ABomb()
 	MeshComponent->AttachTo(RootComponent);
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
 	MeshComponent->SetGenerateOverlapEvents(false);
-
-	HorizontalCapsuleComp = CreateDefaultSubobject<UCapsuleComponent>("HorCapsule");
-	HorizontalCapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	HorizontalCapsuleComp->SetCapsuleRadius(45.0f);
-	HorizontalCapsuleComp->SetCapsuleHalfHeight(CapsuleDefaultHeight);
-	HorizontalCapsuleComp->SetRelativeRotation(FQuat(FRotator(90.0f, 0.0f, 0.0f)));
-	HorizontalCapsuleComp->AttachTo(RootComponent);
-
-	VerticalCapsuleComp = CreateDefaultSubobject<UCapsuleComponent>("VerCapsule");
-	VerticalCapsuleComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	VerticalCapsuleComp->SetCapsuleRadius(45.0f);
-	VerticalCapsuleComp->SetCapsuleHalfHeight(CapsuleDefaultHeight);
-	VerticalCapsuleComp->SetRelativeRotation(FQuat(FRotator(90.0f, 90.0f, 0.0f)));
-	VerticalCapsuleComp->AttachTo(RootComponent);
 }
 
 void ABomb::SetLevel(const int32 NewLevel)
 {
 	Level = NewLevel;
-
-	HorizontalCapsuleComp->SetCapsuleHalfHeight(CapsuleDefaultHeight * (1 + Level));
-	VerticalCapsuleComp->SetCapsuleHalfHeight(CapsuleDefaultHeight * (1 + Level));
 }
 
 void ABomb::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (ABombermanCharacter* Character = GetInstigator<ABombermanCharacter>())
-	{
-		if (ABombermanPlayerState* PS = Character->GetPlayerState<ABombermanPlayerState>())
-		{
-			SetLevel(PS->GetBombPower());
-		}
-	}
-	
 	if (const UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().SetTimer(ExplosionTimer, this, &ABomb::Explode, TimeToExplode);
@@ -73,16 +46,28 @@ void ABomb::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ABomb::Explode()
 {
-	TSet<AActor*> OverlappingActors;
-	GetOverlappingActors(OverlappingActors);
+	// Check all directions for hits
+	const FVector StartPos = GetActorLocation();
+	FVector EndPos1 = StartPos + (GetActorUpVector() * Level * 100.0f);
+	FVector EndPos2 = StartPos - (GetActorUpVector() * Level * 100.0f);
+	FVector EndPos3 = StartPos + (GetActorRightVector() * Level * 100.0f);
+	FVector EndPos4 = StartPos - (GetActorRightVector() * Level * 100.0f);
+	TArray<FVector> EndPositions = { EndPos1, EndPos2, EndPos3, EndPos4 };
 
-	for (AActor* Actor : OverlappingActors)
+	for (const FVector& EndPos : EndPositions)
 	{
-		if (Actor)
+		TArray<FHitResult> HitResults;
+		GetWorld()->LineTraceMultiByProfile(HitResults, StartPos, EndPos, FName("Bomb"));
+
+		for (const FHitResult& HitResult : HitResults)
 		{
-			Actor->TakeDamage(1.0f, FDamageEvent(), GetInstigatorController(), this);
+			if (HitResult.Actor.IsValid())
+			{
+				HitResult.Actor.Get()->TakeDamage(1.0f, FDamageEvent(), GetInstigatorController(), this);
+			}
 		}
 	}
 
+	OnExplodeEvent.Execute();
 	Destroy();
 }

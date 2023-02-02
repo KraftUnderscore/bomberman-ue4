@@ -53,17 +53,32 @@ void ABombermanCharacter::MoveRight(float AxisValue)
 
 void ABombermanCharacter::SpecialAction()
 {
+	if (BombCount == 0)
+	{
+		return;
+	}
+
 	if (UWorld* World = GetWorld())
 	{
-		const FTransform BombTransform = GetTransform();
-		AActor* Actor = World->SpawnActor(BombClass, &BombTransform, FActorSpawnParameters());
-		ABomb* Bomb = Cast<ABomb>(Actor);
+		FTransform BombTransform = GetTransform();
+		FVector Location = BombTransform.GetLocation();
+		Location.Z = 100.0f;
+		BombTransform.SetLocation(Location);
+		BombTransform.SetRotation(FQuat());
 
 		if (ABombermanPlayerState* PS = GetPlayerState<ABombermanPlayerState>())
 		{
-			Bomb->SetLevel(PS->GetBombPower());
+			ABomb* Bomb = Cast<ABomb>(World->SpawnActor(BombClass, &BombTransform, FActorSpawnParameters()));
+			Bomb->OnExplodeEvent.BindUObject(this, &ABombermanCharacter::ReplenishBomb);
+			Bomb->SetLevel(BombsPower);
+			BombCount -= 1;
 		}
 	}
+}
+
+void ABombermanCharacter::PowerUp(const int32 Increase)
+{
+	BombsPower += 1;
 }
 
 void ABombermanCharacter::MoveCharacter(float AxisValue, EAxis::Type Axis)
@@ -78,4 +93,9 @@ void ABombermanCharacter::MoveCharacter(float AxisValue, EAxis::Type Axis)
 
 	const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(Axis);
 	AddMovementInput(Direction, AxisValue);
+}
+
+void ABombermanCharacter::ReplenishBomb()
+{
+	BombCount += 1;
 }

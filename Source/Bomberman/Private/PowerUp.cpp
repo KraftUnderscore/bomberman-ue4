@@ -33,12 +33,8 @@ void APowerUp::OnBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 {
 	if (ABombermanCharacter* Character = Cast<ABombermanCharacter>(OtherActor))
 	{
-		if (ABombermanPlayerState* PS = Character->GetPlayerState<ABombermanPlayerState>())
-		{
-			PS->PowerUp(PowerIncrease);
-
-			Destroy();
-		}
+		Character->PowerUp(PowerIncrease);
+		Destroy();
 	}
 }
 

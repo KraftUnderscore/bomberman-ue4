@@ -18,6 +18,8 @@ public:
 
 	void SetLevel(const int32 NewLevel);
 
+	FSimpleDelegate OnExplodeEvent;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
