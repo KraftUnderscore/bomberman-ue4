@@ -14,6 +14,11 @@ AWall::AWall()
 	MeshComponent->AttachTo(RootComponent);
 }
 
+void AWall::StartPowerUpAnimation()
+{
+	//  Power up vfx here
+}
+
 float AWall::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	if (CanBeDamaged() && DamageAmount > 0.0f)

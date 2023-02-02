@@ -15,6 +15,8 @@ public:
 	// Sets default values for this actor's properties
 	AWall();
 
+	void StartPowerUpAnimation();
+
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser);
 
 private:

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Public/PowerUp.h"
 #include "BombermanGameMode.generated.h"
 
 UCLASS(minimalapi)
@@ -13,6 +14,16 @@ class ABombermanGameMode : public AGameModeBase
 
 public:
 	ABombermanGameMode();
+
+	virtual void StartPlay();
+
+private:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bomberman", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<APowerUp> PowerUpClass;
+
+	class AWall* WallWithPowerUp = nullptr;
+
+	void SpawnPowerUp();
 };
 
 

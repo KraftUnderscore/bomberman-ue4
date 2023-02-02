@@ -5,6 +5,9 @@
 
 #include "Components/CapsuleComponent.h"
 
+#include "BombermanCharacter.h"
+#include "BombermanPlayerState.h"
+
 ABomb::ABomb()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -43,6 +46,14 @@ void ABomb::SetLevel(const int32 NewLevel)
 void ABomb::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (ABombermanCharacter* Character = GetInstigator<ABombermanCharacter>())
+	{
+		if (ABombermanPlayerState* PS = Character->GetPlayerState<ABombermanPlayerState>())
+		{
+			SetLevel(PS->GetBombPower());
+		}
+	}
 	
 	if (const UWorld* World = GetWorld())
 	{
@@ -62,9 +73,6 @@ void ABomb::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void ABomb::Explode()
 {
-	UE_LOG(LogTemp, Error, TEXT("Bomb exploding!"));
-	// spawn explosion vfx
-
 	TSet<AActor*> OverlappingActors;
 	GetOverlappingActors(OverlappingActors);
 

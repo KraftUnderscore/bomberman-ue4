@@ -7,6 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 
+#include <BombermanPlayerState.h>
+
 ABombermanCharacter::ABombermanCharacter()
 {
 	// Set size for player capsule
@@ -54,7 +56,13 @@ void ABombermanCharacter::SpecialAction()
 	if (UWorld* World = GetWorld())
 	{
 		const FTransform BombTransform = GetTransform();
-		World->SpawnActor(BombClass, &BombTransform, FActorSpawnParameters());
+		AActor* Actor = World->SpawnActor(BombClass, &BombTransform, FActorSpawnParameters());
+		ABomb* Bomb = Cast<ABomb>(Actor);
+
+		if (ABombermanPlayerState* PS = GetPlayerState<ABombermanPlayerState>())
+		{
+			Bomb->SetLevel(PS->GetBombPower());
+		}
 	}
 }
 
