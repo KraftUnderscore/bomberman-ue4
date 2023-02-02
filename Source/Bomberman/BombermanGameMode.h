@@ -15,15 +15,21 @@ class ABombermanGameMode : public AGameModeBase
 public:
 	ABombermanGameMode();
 
-	virtual void StartPlay();
+	virtual void StartPlay() override;
 
 private:
+	int32 EnemyCount = 0;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Bomberman", meta = (AllowPrivateAccess = "true"))
 	TSubclassOf<APowerUp> PowerUpClass;
 
 	class AWall* WallWithPowerUp = nullptr;
 
+	void BindEnemies();
 	void SpawnPowerUp();
+
+	UFUNCTION()
+	void OnEnemyDestroyed(AActor* DestroyedActor);
 };
 
 

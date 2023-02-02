@@ -7,6 +7,7 @@
 #include "BombermanPlayerState.h"
 #include "BombermanPlayerController.h"
 #include "Wall.h"
+#include "EnemyCharacter.h"
 
 ABombermanGameMode::ABombermanGameMode()
 {
@@ -17,8 +18,30 @@ ABombermanGameMode::ABombermanGameMode()
 void ABombermanGameMode::StartPlay()
 {
 	SpawnPowerUp();
+	BindEnemies();
 
 	Super::StartPlay();
+}
+
+void ABombermanGameMode::BindEnemies()
+{
+	if (!GetWorld())
+	{
+		return;
+	}
+
+	TArray<AActor*> AllEnemies;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyCharacter::StaticClass(), AllEnemies);
+	
+	EnemyCount = AllEnemies.Num();
+	for (AActor* Enemy : AllEnemies)
+	{
+		if (Enemy)
+		{
+			Enemy->OnDestroyed.AddDynamic(this, &ABombermanGameMode::OnEnemyDestroyed);
+		}
+	}
+
 }
 
 void ABombermanGameMode::SpawnPowerUp()
@@ -40,5 +63,17 @@ void ABombermanGameMode::SpawnPowerUp()
 
 		const FTransform WallTransform = WallWithPowerUp->GetTransform();
 		GetWorld()->SpawnActor(PowerUpClass, &WallTransform, FActorSpawnParameters());
+	}
+}
+
+void ABombermanGameMode::OnEnemyDestroyed(AActor* DestroyedActor)
+{
+	EnemyCount -= 1;
+	if (EnemyCount == 0)
+	{
+		if (WallWithPowerUp)
+		{
+			WallWithPowerUp->StartPowerUpAnimation();
+		}
 	}
 }
